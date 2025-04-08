@@ -21,7 +21,7 @@ Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirec
 
 ## ⚙️ Como usar
 
-1. Acesse a página publicada no GitHub Pages:
+1. Copie o link da página publicada no GitHub Pages:
 https://regirako.github.io/Magnet2URL/#
 
 2. Adicione o magnet link após o caractere `#`. Exemplo:
