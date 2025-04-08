@@ -22,7 +22,7 @@ Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirec
 ## ⚙️ Como usar
 
 1. Acesse a página publicada no GitHub Pages:
-https://regirako.github.io/Magnet2URL/
+https://regirako.github.io/Magnet2URL/#
 
 2. Adicione o magnet link após o caractere `#`. Exemplo:
 https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:b312a99aad88e9907e9c2e4787ceec573ace24cf&dn=Age%20of%20Empires%20II%20Definitive%20Edition
