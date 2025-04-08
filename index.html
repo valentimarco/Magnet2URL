@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecionando Magnet</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 2em;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+    <script>
+      let magnetLink = "";
+
+      function redirecionar() {
+        if (magnetLink.startsWith("magnet:?")) {
+          window.location.href = magnetLink;
+        }
+      }
+
+      window.onload = () => {
+        magnetLink = decodeURIComponent(window.location.hash.substring(1));
+        if (magnetLink.startsWith("magnet:?")) {
+          // Redireciona automaticamente
+          window.location.href = magnetLink;
+
+          // Após 3 segundos, exibe mensagem alternativa
+          setTimeout(() => {
+            document.body.innerHTML = `
+              <h2>Você não foi redirecionado automaticamente?</h2>
+              <p>
+                É possível que você não tenha um cliente torrent instalado que suporte links Magnet.
+                Baixe um cliente como o <strong>qBittorrent</strong> para continuar.
+              </p>
+              <p>Se já instalou ou quiser tentar novamente:</p>
+              <button onclick="redirecionar()">Clique aqui para tentar novamente</button>
+            `;
+          }, 3000);
+        } else {
+          document.body.innerHTML = "<h2>Magnet link inválido ou ausente.</h2>";
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <h1>Redirecionando para o cliente de torrent...</h1>
+  </body>
+</html>
