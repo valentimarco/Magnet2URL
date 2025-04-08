@@ -122,10 +122,14 @@
           analyser.getByteFrequencyData(dataArray);
 
           const volume = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
-          const scale = 1 + volume / 300;
+
+          // ↓ Ajuste para limitar o crescimento
+          const baseScale = 1.0;
+          const maxScale = 1.06; // antes era até 1.3, agora suavizado
+          const dynamicScale = baseScale + Math.min(volume / 300, maxScale - baseScale);
 
           if (regirakoImg) {
-            regirakoImg.style.transform = `scale(${scale})`;
+            regirakoImg.style.transform = `scale(${dynamicScale})`;
           }
 
           requestAnimationFrame(animate);
@@ -137,7 +141,7 @@
       window.onload = () => {
         magnetLink = decodeURIComponent(window.location.hash.substring(1));
 
-        // Adiciona a imagem dançante
+        // Adiciona a imagem dançante em todas as páginas
         regirakoImg = document.createElement("img");
         regirakoImg.src = "assets/regirako.png";
         regirakoImg.alt = "Regirako";
@@ -170,7 +174,6 @@
             document.body.appendChild(regirakoImg);
             audio = document.getElementById("bg-audio");
 
-            // Precisa de interação do usuário para iniciar contexto de áudio em alguns navegadores
             audio.onplay = () => {
               iniciarDancaSincronizada(audio);
             };
