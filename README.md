@@ -30,17 +30,18 @@ Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirec
 3. **Lembre-se:** quanto mais informações seu Magnet Link tiver (**HASH + NAME + TRACKER**), mais fácil será de reconhecer ele no aplicativo de gerenciamente de torrent do seu PC-Desktop.
 
 🔗 Ao clicar nesse link:
-- O navegador tenta abrir o link no seu cliente torrent.
-- Se não for redirecionado automaticamente, uma mensagem explicativa aparecerá com a opção de tentar novamente.
-
----
+- O navegador tenta abrir o link no seu cliente torrent
+- Se não for redirecionado automaticamente, uma mensagem explicativa com um tutorial aparecerá com a opção de tentar novamente
+- Você pode acionar a música enquanto lê o tutorial clicando em "Music ON/OFF"
+ 
+ ---
 
 ## 🧪 Exemplo de uso
 
-🔹 **Link formatado para Notion/Discord**:
+🔸 **Link formatado para Notion/Discord**:
 > [Baixar Linux Mint 💻](https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:b0aaad320310d1d1205d509b6589352da6bf0b16&dn=linuxmint-21.1-xfce-64bit.iso&tr=udp://tracker.openbittorrent.com:6969&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://exodus.desync.com:6969)
 
-🔹 O que o link faz:
+🔸 O que o link faz:
 - Abre o navegador
 - Redireciona para o seu cliente de torrent com o arquivo magnet
 
@@ -71,4 +72,4 @@ Sinta-se à vontade para usar, melhorar e compartilhar. 🚀
 
 ---
 
-Feito com 💙 por [@regirako](https://github.com/regirako)
+Feito com 🧡 por [@regirako](https://github.com/regirako)
