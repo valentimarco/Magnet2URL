@@ -79,21 +79,18 @@
         opacity: 0.5;
         z-index: 5;
         pointer-events: none;
-        animation: dance 1.5s infinite ease-in-out;
-        transform-origin: center;
-      }
-
-      @keyframes dance {
-        0%, 100% { transform: rotate(0deg) scale(1); }
-        25% { transform: rotate(-3deg) scale(1.02); }
-        50% { transform: rotate(0deg) scale(1.05); }
-        75% { transform: rotate(3deg) scale(1.02); }
+        transform-origin: center center;
+        transition: transform 0.1s linear;
       }
     </style>
+  </head>
+  <body>
+    <h1>Redirecionando para o cliente de torrent...</h1>
 
     <script>
       let magnetLink = "";
       let audio;
+      let regirakoImg;
 
       function redirecionar() {
         if (magnetLink.startsWith("magnet:?")) {
@@ -109,15 +106,43 @@
         }
       }
 
+      function iniciarDancaSincronizada(audioElement) {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const source = context.createMediaElementSource(audioElement);
+        const analyser = context.createAnalyser();
+        analyser.fftSize = 256;
+
+        source.connect(analyser);
+        analyser.connect(context.destination);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        function animate() {
+          analyser.getByteFrequencyData(dataArray);
+
+          const volume = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+          const scale = 1 + volume / 300;
+
+          if (regirakoImg) {
+            regirakoImg.style.transform = `scale(${scale})`;
+          }
+
+          requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+
       window.onload = () => {
         magnetLink = decodeURIComponent(window.location.hash.substring(1));
 
-        // Adiciona a imagem dançante na tela de redirecionamento também
-        const img = document.createElement("img");
-        img.src = "assets/regirako.png";
-        img.alt = "Regirako";
-        img.className = "regirako-img";
-        document.body.appendChild(img);
+        // Adiciona a imagem dançante
+        regirakoImg = document.createElement("img");
+        regirakoImg.src = "assets/regirako.png";
+        regirakoImg.alt = "Regirako";
+        regirakoImg.className = "regirako-img";
+        document.body.appendChild(regirakoImg);
 
         if (magnetLink.startsWith("magnet:?")) {
           window.location.href = magnetLink;
@@ -140,17 +165,20 @@
                 <source src="assets/tokyo.mp3" type="audio/mpeg">
                 Seu navegador não suporta o elemento de áudio.
               </audio>
-              <img src="assets/regirako.png" alt="Regirako" class="regirako-img">
             `;
-            audio = document.getElementById('bg-audio');
+
+            document.body.appendChild(regirakoImg);
+            audio = document.getElementById("bg-audio");
+
+            // Precisa de interação do usuário para iniciar contexto de áudio em alguns navegadores
+            audio.onplay = () => {
+              iniciarDancaSincronizada(audio);
+            };
           }, 3000);
         } else {
           document.body.innerHTML = "<h2>Magnet link inválido ou ausente.</h2>";
         }
       };
     </script>
-  </head>
-  <body>
-    <h1>Redirecionando para o cliente de torrent...</h1>
   </body>
 </html>
