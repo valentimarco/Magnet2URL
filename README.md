@@ -22,12 +22,10 @@ Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirec
 ## ⚙️ Como usar
 
 1. Copie o link da página publicada no GitHub Pages:
-
-`https://regirako.github.io/Magnet2URL/#`
+> https://regirako.github.io/Magnet2URL/#
 
 2. Adicione o magnet link após o caractere `#`. Exemplo:
-
-`https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:b0aaad320310d1d1205d509b6589352da6bf0b16&dn=linuxmint-21.1-xfce-64bit.iso&tr=udp://tracker.openbittorrent.com:6969&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://exodus.desync.com:6969`
+https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:b0aaad320310d1d1205d509b6589352da6bf0b16&dn=linuxmint-21.1-xfce-64bit.iso&tr=udp://tracker.openbittorrent.com:6969&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://exodus.desync.com:6969
 
 3. **Lembre-se:** quanto mais informações seu Magnet Link tiver (**HASH + NAME + TRACKER**), mais fácil será de reconhecer ele no aplicativo de gerenciamente de torrent do seu PC-Desktop.
 
