@@ -12,11 +12,9 @@
         position: relative;
         margin: 0;
       }
-
       h1, h2, p {
         color: #333;
       }
-
       button {
         padding: 12px 24px;
         font-size: 1em;
@@ -27,22 +25,18 @@
         cursor: pointer;
         margin-top: 20px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
       }
-
       button:hover {
         background-color: #1b5e20;
         transform: scale(1.05);
       }
-
       .music-btn {
         background-color: #003366;
       }
-
       .music-btn:hover {
         background-color: #002244;
       }
-
       .footer-banner {
         position: fixed;
         bottom: 0;
@@ -55,7 +49,6 @@
         align-items: center;
         z-index: 10;
       }
-
       .footer-banner span {
         white-space: nowrap;
         display: inline-block;
@@ -65,32 +58,37 @@
         font-size: 14px;
         font-weight: bold;
       }
-
       @keyframes slide-left {
         0% { transform: translateX(0); }
         100% { transform: translateX(-100%); }
       }
-
-      .regirako-img {
+      .regirako {
         position: fixed;
-        right: 20px;
         bottom: 60px;
+        right: 20px;
         height: 600px;
         opacity: 0.5;
         z-index: 5;
-        pointer-events: none;
         transform-origin: center center;
-        transition: transform 0.08s ease-out;
+        pointer-events: none;
       }
     </style>
-  </head>
-  <body>
-    <h1>Redirecionando para o cliente de torrent...</h1>
-
     <script>
       let magnetLink = "";
       let audio;
+      let context, analyser, source;
       let regirakoImg;
+
+      const musicList = [
+        'assets/tokyo.mp3',
+        'assets/mafland.mp3',
+        'assets/xuliana.mp3'
+      ];
+
+      function getRandomMusic() {
+        const index = Math.floor(Math.random() * musicList.length);
+        return musicList[index];
+      }
 
       function redirecionar() {
         if (magnetLink.startsWith("magnet:?")) {
@@ -99,6 +97,8 @@
       }
 
       function toggleMusic() {
+        if (!audio) return;
+
         if (audio.paused) {
           audio.play();
         } else {
@@ -106,49 +106,34 @@
         }
       }
 
-      function iniciarDancaSincronizada(audioElement) {
-        const context = new (window.AudioContext || window.webkitAudioContext)();
-        const source = context.createMediaElementSource(audioElement);
-        const analyser = context.createAnalyser();
-        analyser.fftSize = 256;
+      function animate() {
+        if (!analyser || !regirakoImg) return;
 
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(data);
+        const average = data.reduce((a, b) => a + b, 0) / data.length;
+        const scale = 1 + (average / 512) * 0.32; // Pulsação 2x mais suave
+        regirakoImg.style.transform = `scale(${scale})`;
+        requestAnimationFrame(animate);
+      }
+
+      function setupAudioVisualizer() {
+        context = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = context.createAnalyser();
+        source = context.createMediaElementSource(audio);
         source.connect(analyser);
         analyser.connect(context.destination);
-
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        function animate() {
-          analyser.getByteFrequencyData(dataArray);
-          const average = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-
-          // 🔧 Suavização da pulsação — mantém movimento sem ultrapassar o limite
-          const scale = 1 + (average / 512) * 0.16; // valor entre 1 e ~1.08
-
-          if (regirakoImg) {
-            regirakoImg.style.transform = `scale(${scale})`;
-          }
-
-          requestAnimationFrame(animate);
-        }
-
         animate();
       }
 
       window.onload = () => {
         magnetLink = decodeURIComponent(window.location.hash.substring(1));
-
-        // Imagem visível em todas as páginas
-        regirakoImg = document.createElement("img");
-        regirakoImg.src = "assets/regirako.png";
-        regirakoImg.alt = "Regirako";
-        regirakoImg.className = "regirako-img";
-        document.body.appendChild(regirakoImg);
-
         if (magnetLink.startsWith("magnet:?")) {
           window.location.href = magnetLink;
 
           setTimeout(() => {
+            const musicSrc = getRandomMusic();
+
             document.body.innerHTML = `
               <h2>Você não foi redirecionado automaticamente?</h2>
               <p>
@@ -163,22 +148,32 @@
                 <span><strong>Leia o que está escrito na página, ela é um tutorial de como utilizar o redirecionamento automático para o download no aplicativo de gerenciamento de torrents.</strong></span>
               </div>
               <audio id="bg-audio" autoplay loop>
-                <source src="assets/tokyo.mp3" type="audio/mpeg">
+                <source src="${musicSrc}" type="audio/mpeg">
                 Seu navegador não suporta o elemento de áudio.
               </audio>
+              <img class="regirako" src="assets/regirako.png" alt="Regirako">
             `;
 
-            document.body.appendChild(regirakoImg);
-            audio = document.getElementById("bg-audio");
+            audio = document.getElementById('bg-audio');
+            regirakoImg = document.querySelector('.regirako');
 
             audio.onplay = () => {
-              iniciarDancaSincronizada(audio);
+              if (!context) {
+                setupAudioVisualizer();
+              }
             };
           }, 3000);
         } else {
-          document.body.innerHTML = "<h2>Magnet link inválido ou ausente.</h2>";
+          document.body.innerHTML = `
+            <h1>Redirecionando para o cliente de torrent...</h1>
+            <img class="regirako" src="assets/regirako.png" alt="Regirako">
+          `;
         }
       };
     </script>
+  </head>
+  <body>
+    <h1>Redirecionando para o cliente de torrent...</h1>
+    <img class="regirako" src="assets/regirako.png" alt="Regirako">
   </body>
 </html>
