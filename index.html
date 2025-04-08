@@ -12,9 +12,11 @@
         position: relative;
         margin: 0;
       }
+
       h1, h2, p {
         color: #333;
       }
+
       button {
         padding: 12px 24px;
         font-size: 1em;
@@ -27,16 +29,20 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease;
       }
+
       button:hover {
         background-color: #1b5e20;
         transform: scale(1.05);
       }
+
       .music-btn {
         background-color: #003366;
       }
+
       .music-btn:hover {
         background-color: #002244;
       }
+
       .footer-banner {
         position: fixed;
         bottom: 0;
@@ -49,6 +55,7 @@
         align-items: center;
         z-index: 10;
       }
+
       .footer-banner span {
         white-space: nowrap;
         display: inline-block;
@@ -58,10 +65,12 @@
         font-size: 14px;
         font-weight: bold;
       }
+
       @keyframes slide-left {
         0% { transform: translateX(0); }
         100% { transform: translateX(-100%); }
       }
+
       .regirako-img {
         position: fixed;
         right: 20px;
@@ -70,8 +79,18 @@
         opacity: 0.5;
         z-index: 5;
         pointer-events: none;
+        animation: dance 1.5s infinite ease-in-out;
+        transform-origin: center;
+      }
+
+      @keyframes dance {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        25% { transform: rotate(-3deg) scale(1.02); }
+        50% { transform: rotate(0deg) scale(1.05); }
+        75% { transform: rotate(3deg) scale(1.02); }
       }
     </style>
+
     <script>
       let magnetLink = "";
       let audio;
@@ -93,7 +112,7 @@
       window.onload = () => {
         magnetLink = decodeURIComponent(window.location.hash.substring(1));
 
-        // Adiciona a imagem regirako no fundo
+        // Adiciona a imagem dançante na tela de redirecionamento também
         const img = document.createElement("img");
         img.src = "assets/regirako.png";
         img.alt = "Regirako";
