@@ -123,7 +123,7 @@
           const average = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
 
           // 🔧 Suavização da pulsação — mantém movimento sem ultrapassar o limite
-          const scale = 1 + (average / 512) * 0.08; // valor entre 1 e ~1.08
+          const scale = 1 + (average / 512) * 0.16; // valor entre 1 e ~1.08
 
           if (regirakoImg) {
             regirakoImg.style.transform = `scale(${scale})`;
