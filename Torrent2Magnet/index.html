@@ -11,22 +11,27 @@
       background-color: #f5f5f5;
       margin: 0;
     }
-    h1, p {
+
+    h1 {
       color: #333;
     }
+
     input[type="file"] {
-      margin-top: 20px;
+      margin: 20px auto;
+      display: block;
     }
+
     .output {
-      margin-top: 30px;
+      margin-top: 20px;
+      background: #fff;
       padding: 20px;
-      background-color: #fff;
-      border-radius: 10px;
+      border-radius: 8px;
       display: inline-block;
-      text-align: left;
-      font-family: monospace;
-      max-width: 90%;
+      font-size: 16px;
+      word-break: break-word;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+
     .footer-banner {
       position: fixed;
       bottom: 0;
@@ -39,6 +44,7 @@
       align-items: center;
       z-index: 10;
     }
+
     .footer-banner span {
       white-space: nowrap;
       display: inline-block;
@@ -48,15 +54,17 @@
       font-size: 14px;
       font-weight: bold;
     }
+
     @keyframes slide-left {
       0% { transform: translateX(0); }
       100% { transform: translateX(-100%); }
     }
+
     .regirako {
       position: fixed;
       bottom: 60px;
       right: 20px;
-      height: 500px;
+      height: 600px;
       opacity: 0.5;
       z-index: 5;
       pointer-events: none;
@@ -65,105 +73,82 @@
 </head>
 <body>
   <h1>Torrent2Magnet</h1>
-  <p>Selecione um arquivo .torrent e veja as informações extraídas automaticamente:</p>
-  <input type="file" id="torrentInput" accept=".torrent" />
+  <p>Envie um arquivo <code>.torrent</code> para extrair <strong>HASH</strong> e <strong>NAME</strong> com precisão.</p>
+
+  <input type="file" id="torrentFile" accept=".torrent">
   <div class="output" id="output"></div>
-  <img class="regirako" src="../assets/regirako.png" alt="Regirako">
+
   <div class="footer-banner">
     <span>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</span>
   </div>
+  <img class="regirako" src="../assets/regirako.png" alt="Regirako" />
 
   <script>
-    document.getElementById('torrentInput').addEventListener('change', async function () {
+    document.getElementById('torrentFile').addEventListener('change', async function () {
       const file = this.files[0];
-      const output = document.getElementById('output');
+      const output = document.getElementById("output");
       output.innerHTML = "";
 
-      if (!file) return output.innerText = "Nenhum arquivo selecionado.";
+      if (!file) return;
 
       const buffer = await file.arrayBuffer();
-      const data = new Uint8Array(buffer);
+      const bytes = new Uint8Array(buffer);
 
       try {
-        // Função para decodificar bencode e extrair a posição do campo info
-        function extractInfoDict(data) {
-          let pos = 0;
-          function readChar() {
-            return String.fromCharCode(data[pos++]);
-          }
-          function readLength() {
-            let len = "";
-            while (String.fromCharCode(data[pos]) !== ":") len += readChar();
-            pos++; // skip ':'
-            return parseInt(len);
-          }
-          function decode() {
-            const char = readChar();
-            if (char === 'i') {
-              let end = data.indexOf(0x65, pos); // 'e'
-              const number = parseInt(new TextDecoder().decode(data.slice(pos, end)));
-              pos = end + 1;
-              return number;
-            } else if (char === 'l') {
-              const list = [];
-              while (data[pos] !== 0x65) list.push(decode());
-              pos++;
-              return list;
-            } else if (char === 'd') {
-              const dict = {};
-              while (data[pos] !== 0x65) {
-                const keyStart = pos;
-                const key = decode();
-                if (key === 'info') {
-                  const infoStart = pos;
-                  const value = decode();
-                  const infoEnd = pos;
-                  return {
-                    info: value,
-                    raw: data.slice(infoStart, infoEnd),
-                    name: value.name ? new TextDecoder().decode(value.name) : "(sem nome)"
-                  };
-                } else {
-                  decode(); // skip value
-                }
-              }
-              pos++;
-              return null;
-            } else if (/\d/.test(char)) {
-              const len = parseInt(char + readLength());
-              const str = data.slice(pos, pos + len);
-              pos += len;
-              return new TextDecoder().decode(str);
-            } else {
-              throw new Error("Formato inválido");
-            }
-          }
-          return decode();
-        }
+        // Encontrar onde o dicionário 'info' começa
+        const infoIndex = buffer.indexOf(new TextEncoder().encode("4:info")[0]);
+        if (infoIndex === -1) throw new Error("Campo 'info' não encontrado.");
 
-        const infoData = extractInfoDict(data);
-        if (!infoData || !infoData.raw) throw new Error("Dicionário 'info' não encontrado.");
+        // Encontrar os bytes reais do dicionário 'info' para gerar o hash
+        const infoStart = bytes.indexOf(0x64, infoIndex + 6); // 'd' de dict
+        const infoBytes = bytes.slice(infoStart);
+        const endIndex = findDictEnd(infoBytes);
+        const infoSection = infoBytes.slice(0, endIndex);
 
-        const hashBuffer = await crypto.subtle.digest("SHA-1", infoData.raw);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const infoHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-        const name = infoData.name;
-        const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
-        const github = `https://regirako.github.io/Magnet2URL/#${magnet}`;
+        // Calcular SHA-1 do dicionário 'info'
+        const hashBuffer = await crypto.subtle.digest("SHA-1", infoSection);
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Buscar o campo 'name'
+        const name = extractName(infoSection);
+
+        const magnet = `magnet:?xt=urn:btih:${hashHex}&dn=${encodeURIComponent(name)}`;
+        const githubLink = `https://regirako.github.io/Magnet2URL/#${magnet}`;
 
         output.innerHTML = `
-<b>HASH:</b> ${infoHash}
-<b>NAME:</b> ${name}
-
-<b>MAGNET:</b>
-<a href="${magnet}" target="_blank">${magnet}</a>
-
-<b>LINK NO GITHUB:</b>
-<a href="${github}" target="_blank">${github}</a>
+          <strong>HASH:</strong> ${hashHex}<br>
+          <strong>NAME:</strong> ${name}<br><br>
+          <strong>Magnet Link:</strong><br><code>${magnet}</code><br><br>
+          <strong>Link GitHub:</strong><br><a href="${githubLink}" target="_blank">${githubLink}</a>
         `;
       } catch (err) {
-        output.innerHTML = `<span style="color:red">❌ Erro: ${err.message}</span>`;
-        console.error(err);
+        output.innerHTML = `<span style="color:red;">❌ Erro: ${err.message}</span>`;
+      }
+
+      function findDictEnd(bytes) {
+        let stack = 1, i = 1;
+        while (stack > 0 && i < bytes.length) {
+          if (bytes[i] === 0x64) stack++; // 'd'
+          else if (bytes[i] === 0x65) stack--; // 'e'
+          i++;
+        }
+        return i;
+      }
+
+      function extractName(infoBytes) {
+        const nameIndex = new TextDecoder().decode(infoBytes).indexOf('4:name');
+        if (nameIndex === -1) return "Nome não encontrado";
+        const lenMatch = infoBytes.slice(nameIndex + 6);
+        const lenStr = [];
+        for (let b of lenMatch) {
+          if (b === 0x3A) break;
+          lenStr.push(String.fromCharCode(b));
+        }
+        const length = parseInt(lenStr.join(""));
+        const colon = nameIndex + 6 + lenStr.length + 1;
+        const start = colon;
+        const end = colon + length;
+        return new TextDecoder().decode(infoBytes.slice(start, end));
       }
     });
   </script>
