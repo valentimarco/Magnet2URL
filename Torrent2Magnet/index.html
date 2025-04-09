@@ -1,149 +1,34 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Torrent2Magnet</title>
+  <meta charset="UTF-8">
+  <title>Extrator de info_hash de Torrent</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 2em;
-      background-color: #f5f5f5;
-      margin: 0;
-    }
-
-    h1, h2, p {
-      color: #333;
-    }
-
-    input[type="file"] {
-      padding: 10px;
-      font-size: 1em;
-    }
-
-    .output {
-      margin-top: 20px;
       padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      display: inline-block;
-      text-align: left;
     }
-
+    input[type="file"] {
+      margin: 20px 0;
+    }
+    #output {
+      margin-top: 20px;
+      text-align: left;
+      display: inline-block;
+    }
     .error {
       color: red;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    .footer-banner {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 40px;
-      background: rgba(51, 51, 51, 0.2);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      z-index: 10;
-    }
-
-    .footer-banner span {
-      white-space: nowrap;
-      display: inline-block;
-      padding-left: 100%;
-      animation: slide-left 40s linear infinite;
-      color: #333;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    @keyframes slide-left {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-
-    .regirako {
-      position: fixed;
-      bottom: 60px;
-      right: 20px;
-      height: 500px;
-      opacity: 0.5;
-      z-index: 5;
-      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <h1>Torrent2Magnet</h1>
-  <p>Envie um arquivo <strong>.torrent</strong> para gerar o HASH e o Magnet Link.</p>
-  <input type="file" id="torrentFile" accept=".torrent" />
-  <div class="output" id="result"></div>
-  <div class="error" id="errorConsole"></div>
-
-  <div class="footer-banner">
-    <span>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</span>
-  </div>
-  <img class="regirako" src="../assets/regirako.png" alt="Regirako" />
-
+  <h1>Extrator de info_hash de Torrent</h1>
+  <p>Selecione um arquivo <code>.torrent</code> para extrair o <code>info_hash</code> e o nome:</p>
+  <input type="file" id="torrentFile" accept=".torrent">
+  <div id="output"></div>
   <script>
-    const input = document.getElementById("torrentFile");
-    const result = document.getElementById("result");
-    const errorConsole = document.getElementById("errorConsole");
-
-    input.addEventListener("change", async (event) => {
-      errorConsole.textContent = "";
-      result.innerHTML = "";
-
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = function () {
-        try {
-          const arrayBuffer = reader.result;
-          const uint8Array = new Uint8Array(arrayBuffer);
-          const torrent = bencode.decode(uint8Array);
-
-          const info = torrent.info;
-          const name = info.name.toString();
-          const encodedInfo = bencode.encode(info);
-
-          crypto.subtle.digest("SHA-1", encodedInfo).then((hashBuffer) => {
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-            const magnet = `magnet:?xt=urn:btih:${hashHex}&dn=${encodeURIComponent(name)}`;
-            const githubLink = `https://regirako.github.io/Magnet2URL/#${magnet}`;
-
-            result.innerHTML = `
-              <strong>HASH:</strong> ${hashHex}<br>
-              <strong>NAME:</strong> ${name}<br><br>
-              <strong>Magnet:</strong><br><code>${magnet}</code><br><br>
-              <strong>Link para GitHub:</strong><br><a href="${githubLink}" target="_blank">${githubLink}</a>
-            `;
-          }).catch(err => {
-            errorConsole.textContent = "❌ Erro ao calcular o hash.";
-            console.error("Hash error:", err);
-          });
-
-        } catch (e) {
-          errorConsole.textContent = "❌ Erro ao processar o arquivo .torrent.";
-          console.error("Erro:", e);
-        }
-      };
-
-      reader.onerror = function () {
-        errorConsole.textContent = "❌ Erro ao ler o arquivo.";
-      };
-
-      reader.readAsArrayBuffer(file);
-    });
-
-    // Módulo Bencode adaptado para funcionar no navegador
+    // Biblioteca bencode.js incorporada
     const bencode = {
       decode: (data) => {
         const textDecoder = new TextDecoder();
@@ -184,7 +69,7 @@
             offset += len;
             return value;
           }
-          throw new Error("Invalid bencode format");
+          throw new Error("Formato bencode inválido");
         }
 
         return decodeItem();
@@ -208,6 +93,52 @@
         return new TextEncoder().encode(encodeItem(obj));
       }
     };
+
+    document.getElementById('torrentFile').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const arrayBuffer = e.target.result;
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const torrent = bencode.decode(uint8Array);
+
+          if (!torrent.info) {
+            throw new Error("Dicionário 'info' não encontrado no arquivo .torrent.");
+          }
+
+          const info = torrent.info;
+          const name = info.name ? new TextDecoder().decode(info.name) : "Nome não disponível";
+          const encodedInfo = bencode.encode(info);
+
+          crypto.subtle.digest("SHA-1", encodedInfo).then(hashBuffer => {
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const infoHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            const magnetLink = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
+
+            document.getElementById('output').innerHTML = `
+              <p><strong>Nome:</strong> ${name}</p>
+              <p><strong>info_hash:</strong> ${infoHash}</p>
+              <p><strong>Magnet Link:</strong> <a href="${magnetLink}" target="_blank">${magnetLink}</a></p>
+            `;
+          }).catch(err => {
+            throw new Error("Erro ao calcular o SHA-1: " + err.message);
+          });
+
+        } catch (err) {
+          document.getElementById('output').innerHTML = `<p class="error">Erro: ${err.message}</p>`;
+        }
+      };
+
+      reader.onerror = function() {
+        document.getElementById('output').innerHTML = `<p class="error">Erro ao ler o arquivo.</p>`;
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
   </script>
 </body>
 </html>
