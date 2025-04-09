@@ -1,91 +1,99 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Torrent2Magnet</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
       text-align: center;
       padding: 2em;
+      background-color: #f5f5f5;
+      margin: 0;
     }
-    h1 {
-      color: #2e7d32;
+    h1, h2, p {
+      color: #333;
     }
     input[type="file"] {
       margin-top: 20px;
     }
-    #output {
+    button {
+      padding: 12px 24px;
+      font-size: 1em;
+      border: none;
+      background-color: #2e7d32;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+    button:hover {
+      background-color: #1b5e20;
+      transform: scale(1.05);
+    }
+    .output {
       margin-top: 30px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      word-break: break-all;
-    }
-    .error {
-      color: red;
-    }
-    .success {
-      color: green;
-      font-weight: bold;
-    }
-    a {
-      color: #0b79d0;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      display: inline-block;
+      max-width: 90%;
       word-break: break-all;
     }
   </style>
 </head>
 <body>
-  <h1>🔗 Torrent2Magnet</h1>
-  <p>Envie um arquivo <code>.torrent</code> e receba o Magnet Link com base no seu GitHub:</p>
-  <input type="file" id="torrentFile" accept=".torrent">
-  <div id="output"></div>
+  <h1>🎯 Torrent2Magnet</h1>
+  <p>Envie um arquivo <strong>.torrent</strong> e receba seu link magnet no formato do seu GitHub:</p>
 
-  <script type="module">
-    import { decode } from 'https://cdn.jsdelivr.net/npm/bencode@3.0.3/+esm';
+  <input type="file" id="torrentFile" accept=".torrent" />
+  <br />
+  <button onclick="handleTorrent()">Gerar Magnet Link</button>
 
-    document.getElementById('torrentFile').addEventListener('change', async (event) => {
-      const file = event.target.files[0];
+  <div id="output" class="output"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bencode@2.1.3/lib/bencode.min.js"></script>
+  <script>
+    const baseURL = "https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:";
+
+    function handleTorrent() {
+      const fileInput = document.getElementById('torrentFile');
       const output = document.getElementById('output');
-      output.innerHTML = '';
 
-      if (!file) return;
-
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const data = decode(new Uint8Array(arrayBuffer));
-
-        if (!data['info']) throw new Error("Campo 'info' não encontrado.");
-
-        const infoBuffer = new TextEncoder().encode(JSON.stringify(data['info']));
-        const hashBuffer = await crypto.subtle.digest('SHA-1', encodeBencode(data['info']));
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const infoHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-        const name = new TextDecoder().decode(data['info']['name'] || data['info']['name.utf-8'] || 'arquivo');
-        const githubBase = "https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:";
-
-        const magnetLink = `${githubBase}${infoHash}&dn=${encodeURIComponent(name)}`;
-
-        output.innerHTML = `
-          <p class="success">✅ Magnet link gerado com sucesso:</p>
-          <a href="${magnetLink}" target="_blank">${magnetLink}</a>
-        `;
-      } catch (err) {
-        output.innerHTML = `<p class="error">Erro ao processar o arquivo .torrent:<br>${err.message}</p>`;
+      if (!fileInput.files.length) {
+        alert("Selecione um arquivo .torrent.");
+        return;
       }
-    });
 
-    // Função para codificar objeto em bencode (simples para o campo 'info')
-    function encodeBencode(obj) {
-      function encodeItem(item) {
-        if (typeof item === 'string') {
-          const bytes = new TextEncoder().encode(item);
-          return `${bytes.length}:${item}`;
-        } else if (typeof item === 'number') {
-          return `i${item}e`;
-        } else if (Array.isArray(item)) {
-          return `l${item.map(encodeItem).join('')}e`;
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        try {
+          const arrayBuffer = e.target.result;
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const torrent = bencode.decode(uint8Array);
+
+          const info = torrent['info'];
+          const name = new TextDecoder().decode(info['name']);
+          const encodedInfo = bencode.encode(info);
+          const hashBuffer = crypto.subtle.digest("SHA-1", encodedInfo).then(hash => {
+            const hashArray = Array.from(new Uint8Array(hash));
+            const infoHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+            const magnet = `${baseURL}${infoHash}&dn=${encodeURIComponent(name)}`;
+            output.innerHTML = `<strong>Magnet Link:</strong><br><a href="${magnet}" target="_blank">${magnet}</a>`;
+          });
+        } catch (err) {
+          console.error(err);
+          output.innerHTML = "<span style='color:red'>❌ Erro ao processar o arquivo .torrent.</span>";
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+  </script>
+</body>
+</html>
