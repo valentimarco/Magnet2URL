@@ -24,11 +24,11 @@
       border-radius: 8px;
       display: inline-block;
       max-width: 90%;
-      word-break: break-all;
+      word-break: break-word;
     }
     .error {
       color: red;
-      margin-top: 10px;
+      margin-top: 20px;
     }
     .footer-banner {
       position: fixed;
@@ -103,7 +103,9 @@
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 
-        const name = info["name"].toString();
+        const name = typeof info["name"] === "string" 
+          ? info["name"]
+          : new TextDecoder().decode(info["name"]);
 
         const magnetLink = `magnet:?xt=urn:btih:${hashHex}&dn=${encodeURIComponent(name)}`;
         const githubLink = `${githubBase}${hashHex}&dn=${encodeURIComponent(name)}`;
@@ -117,7 +119,7 @@
           <a href="${githubLink}" target="_blank">${githubLink}</a>
         `;
       } catch (err) {
-        console.error(err);
+        console.error("Erro ao processar o arquivo .torrent:", err);
         errorOutput.textContent = "❌ Erro ao processar o arquivo .torrent.";
       }
     });
