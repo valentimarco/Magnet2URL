@@ -75,8 +75,7 @@
         pointer-events: none;
       }
     </style>
-    <!-- Bencode CORRETO -->
-    <script src="https://unpkg.com/bencode@2.1.3/lib/bencode.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/webtorrent/bencode@master/lib/bencode.min.js"></script>
   </head>
   <body>
     <h1>Torrent2Magnet</h1>
@@ -108,11 +107,11 @@
           try {
             const arrayBuffer = reader.result;
             const uint8Array = new Uint8Array(arrayBuffer);
-            const torrent = bencode.decode(uint8Array);
+            const torrent = window.bencode.decode(uint8Array);
 
             const info = torrent.info;
             const name = info.name.toString();
-            const encodedInfo = bencode.encode(info);
+            const encodedInfo = window.bencode.encode(info);
 
             // SHA-1 Hash
             crypto.subtle.digest("SHA-1", encodedInfo).then((hashBuffer) => {
@@ -128,6 +127,9 @@
                 <strong>Magnet:</strong><br><code>${magnet}</code><br><br>
                 <strong>Link para GitHub:</strong><br><a href="${githubLink}" target="_blank">${githubLink}</a>
               `;
+            }).catch(err => {
+              errorConsole.textContent = "❌ Erro ao calcular o hash.";
+              console.error("Hash error:", err);
             });
 
           } catch (e) {
