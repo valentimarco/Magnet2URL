@@ -21,9 +21,6 @@
       word-break: break-word;
     }
   </style>
-
-  <!-- Biblioteca bencode -->
-  <script src="https://cdn.jsdelivr.net/npm/bencode@2.1.3/lib/bencode.min.js"></script>
 </head>
 <body>
   <h1>Torrent2Magnet</h1>
@@ -31,6 +28,88 @@
 
   <input type="file" id="torrentFile" accept=".torrent" />
   <div id="output"></div>
+
+  <!-- Biblioteca bencode compatível com navegador -->
+  <script>
+    const bencode = {
+      decode: (buffer) => {
+        const textDecoder = new TextDecoder("utf-8");
+
+        let offset = 0;
+
+        function readChar() {
+          return String.fromCharCode(buffer[offset++]);
+        }
+
+        function readUntil(delim) {
+          let str = "";
+          while (String.fromCharCode(buffer[offset]) !== delim) {
+            str += String.fromCharCode(buffer[offset++]);
+          }
+          offset++;
+          return str;
+        }
+
+        function parse() {
+          const char = readChar();
+          if (char === "i") {
+            const number = readUntil("e");
+            return parseInt(number, 10);
+          } else if (char === "l") {
+            const list = [];
+            while (buffer[offset] !== 101) list.push(parse());
+            offset++;
+            return list;
+          } else if (char === "d") {
+            const dict = {};
+            while (buffer[offset] !== 101) {
+              const key = parse();
+              const val = parse();
+              dict[key] = val;
+            }
+            offset++;
+            return dict;
+          } else if (!isNaN(char)) {
+            let len = char;
+            while (buffer[offset] !== 58) len += readChar();
+            offset++;
+            len = parseInt(len, 10);
+            const str = buffer.slice(offset, offset + len);
+            offset += len;
+            return str;
+          } else {
+            throw new Error("Invalid bencode format");
+          }
+        }
+
+        return parse();
+      },
+      encode: (obj) => {
+        function encodeItem(item) {
+          if (typeof item === "number") {
+            return `i${item}e`;
+          } else if (Array.isArray(item)) {
+            return `l${item.map(encodeItem).join("")}e`;
+          } else if (item instanceof Uint8Array) {
+            return `${item.length}:${new TextDecoder().decode(item)}`;
+          } else if (typeof item === "string") {
+            return `${item.length}:${item}`;
+          } else if (typeof item === "object") {
+            return (
+              "d" +
+              Object.keys(item)
+                .sort()
+                .map((key) => encodeItem(key) + encodeItem(item[key]))
+                .join("") +
+              "e"
+            );
+          }
+          throw new Error("Unsupported type");
+        }
+        return new TextEncoder().encode(encodeItem(obj));
+      }
+    };
+  </script>
 
   <script>
     document.getElementById('torrentFile').addEventListener('change', async function () {
@@ -49,9 +128,8 @@
         try {
           const buffer = new Uint8Array(event.target.result);
           const decoded = bencode.decode(buffer);
-          const info = decoded.info;
-
-          const name = new TextDecoder().decode(info.name);
+          const info = decoded["info"];
+          const name = new TextDecoder().decode(info["name"]);
           const encodedInfo = bencode.encode(info);
           const hashBuffer = await crypto.subtle.digest("SHA-1", encodedInfo);
           const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
