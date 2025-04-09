@@ -16,53 +16,33 @@
     input[type="file"] {
       margin-top: 20px;
     }
-    button {
-      padding: 12px 24px;
-      font-size: 1em;
-      border: none;
-      background-color: #2e7d32;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
-    }
-    button:hover {
-      background-color: #1b5e20;
-      transform: scale(1.05);
-    }
     #output {
       margin-top: 30px;
-      word-break: break-all;
+      word-break: break-word;
     }
   </style>
 
-  <!-- Inclui a lib bencode -->
+  <!-- Biblioteca bencode -->
   <script src="https://cdn.jsdelivr.net/npm/bencode@2.1.3/lib/bencode.min.js"></script>
 </head>
 <body>
   <h1>Torrent2Magnet</h1>
-  <p>Selecione um arquivo <strong>.torrent</strong> para extrair o HASH e o NOME:</p>
+  <p>Envie um arquivo <strong>.torrent</strong> para extrair automaticamente o <strong>HASH</strong> e o <strong>NOME</strong>:</p>
 
   <input type="file" id="torrentFile" accept=".torrent" />
-  <br>
-  <button onclick="handleTorrent()">Extrair Dados</button>
-
   <div id="output"></div>
 
   <script>
-    async function handleTorrent() {
-      const fileInput = document.getElementById('torrentFile');
+    document.getElementById('torrentFile').addEventListener('change', async function () {
+      const file = this.files[0];
       const output = document.getElementById('output');
       output.innerHTML = "";
 
-      if (!fileInput.files.length) {
-        output.innerHTML = "❗ Por favor, selecione um arquivo .torrent.";
+      if (!file) {
+        output.innerHTML = "❗ Nenhum arquivo selecionado.";
         return;
       }
 
-      const file = fileInput.files[0];
       const reader = new FileReader();
 
       reader.onload = async function (event) {
@@ -88,7 +68,7 @@
       };
 
       reader.readAsArrayBuffer(file);
-    }
+    });
   </script>
 </body>
 </html>
