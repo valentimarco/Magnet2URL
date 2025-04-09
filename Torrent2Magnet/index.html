@@ -20,6 +20,20 @@
       margin-top: 30px;
       word-break: break-word;
     }
+    #consoleLog {
+      margin-top: 40px;
+      text-align: left;
+      background: #222;
+      color: #0f0;
+      padding: 1em;
+      font-family: monospace;
+      font-size: 0.9em;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 10px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -28,94 +42,105 @@
 
   <input type="file" id="torrentFile" accept=".torrent" />
   <div id="output"></div>
+  <div id="consoleLog">Console:</div>
 
-  <!-- Biblioteca bencode compatível com navegador -->
+  <!-- Bencode.js diretamente embutido (versão segura para navegador) -->
   <script>
-    const bencode = {
-      decode: (buffer) => {
-        const textDecoder = new TextDecoder("utf-8");
-
-        let offset = 0;
-
-        function readChar() {
-          return String.fromCharCode(buffer[offset++]);
+    // Versão compacta de bencode.js (adaptada para browser)
+    const bencode = (() => {
+      function decode(input) {
+        let pos = 0;
+        function nextChar() {
+          return String.fromCharCode(input[pos]);
         }
-
-        function readUntil(delim) {
-          let str = "";
-          while (String.fromCharCode(buffer[offset]) !== delim) {
-            str += String.fromCharCode(buffer[offset++]);
+        function readLen() {
+          let len = '';
+          while (input[pos] !== 58) {
+            len += String.fromCharCode(input[pos]);
+            pos++;
           }
-          offset++;
-          return str;
+          pos++;
+          return parseInt(len);
         }
-
-        function parse() {
-          const char = readChar();
-          if (char === "i") {
-            const number = readUntil("e");
-            return parseInt(number, 10);
-          } else if (char === "l") {
-            const list = [];
-            while (buffer[offset] !== 101) list.push(parse());
-            offset++;
-            return list;
-          } else if (char === "d") {
-            const dict = {};
-            while (buffer[offset] !== 101) {
-              const key = parse();
-              const val = parse();
-              dict[key] = val;
+        function decodeItem() {
+          let char = String.fromCharCode(input[pos]);
+          if (char === 'i') {
+            pos++;
+            let num = '';
+            while (input[pos] !== 101) {
+              num += String.fromCharCode(input[pos]);
+              pos++;
             }
-            offset++;
+            pos++;
+            return parseInt(num, 10);
+          } else if (char === 'l') {
+            pos++;
+            const list = [];
+            while (String.fromCharCode(input[pos]) !== 'e') {
+              list.push(decodeItem());
+            }
+            pos++;
+            return list;
+          } else if (char === 'd') {
+            pos++;
+            const dict = {};
+            while (String.fromCharCode(input[pos]) !== 'e') {
+              const key = decodeItem();
+              const val = decodeItem();
+              dict[new TextDecoder().decode(key)] = val;
+            }
+            pos++;
             return dict;
-          } else if (!isNaN(char)) {
-            let len = char;
-            while (buffer[offset] !== 58) len += readChar();
-            offset++;
-            len = parseInt(len, 10);
-            const str = buffer.slice(offset, offset + len);
-            offset += len;
-            return str;
+          } else if (char >= '0' && char <= '9') {
+            const len = readLen();
+            const val = input.slice(pos, pos + len);
+            pos += len;
+            return val;
           } else {
-            throw new Error("Invalid bencode format");
+            throw new Error(`Invalid token '${char}' at position ${pos}`);
           }
         }
+        return decodeItem();
+      }
 
-        return parse();
-      },
-      encode: (obj) => {
+      function encode(obj) {
         function encodeItem(item) {
-          if (typeof item === "number") {
+          if (typeof item === 'number') {
             return `i${item}e`;
           } else if (Array.isArray(item)) {
-            return `l${item.map(encodeItem).join("")}e`;
+            return `l${item.map(encodeItem).join('')}e`;
           } else if (item instanceof Uint8Array) {
             return `${item.length}:${new TextDecoder().decode(item)}`;
-          } else if (typeof item === "string") {
+          } else if (typeof item === 'string') {
             return `${item.length}:${item}`;
-          } else if (typeof item === "object") {
-            return (
-              "d" +
-              Object.keys(item)
-                .sort()
-                .map((key) => encodeItem(key) + encodeItem(item[key]))
-                .join("") +
-              "e"
-            );
+          } else if (typeof item === 'object') {
+            return 'd' + Object.keys(item).sort().map(key => {
+              return encodeItem(key) + encodeItem(item[key]);
+            }).join('') + 'e';
+          } else {
+            throw new Error("Unsupported type for bencode");
           }
-          throw new Error("Unsupported type");
         }
         return new TextEncoder().encode(encodeItem(obj));
       }
-    };
+
+      return { decode, encode };
+    })();
   </script>
 
   <script>
-    document.getElementById('torrentFile').addEventListener('change', async function () {
+    const torrentInput = document.getElementById('torrentFile');
+    const output = document.getElementById('output');
+    const consoleLog = document.getElementById('consoleLog');
+
+    function log(msg) {
+      consoleLog.textContent += `\n> ${msg}`;
+    }
+
+    torrentInput.addEventListener('change', function () {
       const file = this.files[0];
-      const output = document.getElementById('output');
       output.innerHTML = "";
+      consoleLog.textContent = "Console:";
 
       if (!file) {
         output.innerHTML = "❗ Nenhum arquivo selecionado.";
@@ -124,10 +149,15 @@
 
       const reader = new FileReader();
 
-      reader.onload = async function (event) {
+      reader.onload = async function (e) {
         try {
-          const buffer = new Uint8Array(event.target.result);
+          log("🔍 Lendo arquivo...");
+          const buffer = new Uint8Array(e.target.result);
+          log(`📦 Arquivo carregado: ${file.name} (${buffer.length} bytes)`);
+
           const decoded = bencode.decode(buffer);
+          log("✅ Arquivo decodificado com sucesso.");
+
           const info = decoded["info"];
           const name = new TextDecoder().decode(info["name"]);
           const encodedInfo = bencode.encode(info);
@@ -139,9 +169,11 @@
             <p><strong>HASH:</strong> <code>${hashHex}</code></p>
             <p><strong>NAME:</strong> <code>${name}</code></p>
           `;
-        } catch (error) {
-          console.error(error);
+          log("🎯 HASH e NAME extraídos com sucesso.");
+        } catch (err) {
+          console.error(err);
           output.innerHTML = "❌ Erro ao processar o arquivo .torrent.";
+          log(`❌ Erro: ${err.message}`);
         }
       };
 
