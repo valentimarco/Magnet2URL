@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gerador de Magnet Links</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
+        padding: 2em;
+        background-color: #f5f5f5;
+      }
+      h1, p {
+        color: #333;
+      }
+      input, button {
+        font-size: 1em;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+      button {
+        background-color: #2e7d32;
+        color: white;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      button:hover {
+        background-color: #1b5e20;
+      }
+      #magnetOutput {
+        margin-top: 20px;
+        word-break: break-all;
+      }
+    </style>
+    <script src="https://unpkg.com/bencode-js@1.0.4/bencode.min.js"></script>
+  </head>
+  <body>
+    <h1>Gerador de Magnet Link para Notion / GitHub</h1>
+
+    <p>Selecione um arquivo <strong>.torrent</strong> do seu computador para gerar o link:</p>
+
+    <input type="file" id="torrentFile" accept=".torrent" />
+    <br>
+    <button onclick="processTorrent()">Gerar Magnet Link</button>
+
+    <p id="magnetOutput"></p>
+
+    <script>
+      function processTorrent() {
+        const input = document.getElementById('torrentFile');
+        const output = document.getElementById('magnetOutput');
+
+        if (!input.files.length) {
+          output.innerText = "Selecione um arquivo .torrent.";
+          return;
+        }
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+          try {
+            const buffer = event.target.result;
+            const decoded = bencode.decode(buffer);
+            const info = decoded['info'];
+            const encodedInfo = bencode.encode(info);
+            crypto.subtle.digest("SHA-1", encodedInfo).then(hashBuffer => {
+              const hashArray = Array.from(new Uint8Array(hashBuffer));
+              const infoHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+              const name = new TextDecoder().decode(info['name']);
+              const magnet = `https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
+              output.innerHTML = `<strong>Magnet Link:</strong><br><a href="${magnet}" target="_blank">${magnet}</a>`;
+            });
+          } catch (err) {
+            output.innerText = "Erro ao processar o arquivo .torrent.";
+            console.error(err);
+          }
+        };
+
+        reader.readAsArrayBuffer(file);
+      }
+    </script>
+  </body>
+</html>
