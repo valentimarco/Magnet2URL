@@ -1,127 +1,183 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Torrent2Magnet</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f5f5;
       text-align: center;
       padding: 2em;
+      background-color: #f5f5f5;
     }
-    h1 {
-      color: #2e7d32;
+    h1, p {
+      color: #333;
     }
     input[type="file"] {
-      margin: 20px 0;
-    }
-    .result {
       margin-top: 20px;
-      font-size: 16px;
-      background: #e0f2f1;
-      padding: 15px;
-      border-radius: 8px;
-      display: inline-block;
-      max-width: 90%;
+    }
+    #output {
+      margin-top: 30px;
       word-break: break-word;
     }
-    .error {
-      color: red;
-      margin-top: 20px;
-    }
-    .footer-banner {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 40px;
-      background: rgba(51, 51, 51, 0.2);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      z-index: 10;
-    }
-    .footer-banner span {
-      white-space: nowrap;
-      display: inline-block;
-      padding-left: 100%;
-      animation: slide-left 50s linear infinite;
-      color: #333;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    @keyframes slide-left {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-    .regirako {
-      position: fixed;
-      bottom: 60px;
-      right: 20px;
-      height: 600px;
-      opacity: 0.5;
-      z-index: 5;
-      transform-origin: center center;
-      pointer-events: none;
+    #consoleLog {
+      margin-top: 40px;
+      text-align: left;
+      background: #222;
+      color: #0f0;
+      padding: 1em;
+      font-family: monospace;
+      font-size: 0.9em;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 10px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <h1>🔗 Torrent2Magnet</h1>
-  <p>Envie um arquivo <strong>.torrent</strong> e veja o <code>HASH</code>, <code>NAME</code> e o <strong>link magnet</strong>:</p>
-  <input type="file" id="torrentInput" accept=".torrent" />
-  <div class="result" id="output"></div>
-  <div class="error" id="errorOutput"></div>
+  <h1>Torrent2Magnet</h1>
+  <p>Envie um arquivo <strong>.torrent</strong> para extrair automaticamente o <strong>HASH</strong> e o <strong>NOME</strong>:</p>
 
-  <div class="footer-banner">
-    <span><strong>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</strong></span>
-  </div>
-  <img class="regirako" src="../assets/regirako.png" alt="Regirako">
+  <input type="file" id="torrentFile" accept=".torrent" />
+  <div id="output"></div>
+  <div id="consoleLog">Console:</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bencode@2.0.3/lib/bencode.min.js"></script>
+  <!-- Bencode.js diretamente embutido (versão segura para navegador) -->
   <script>
-    const input = document.getElementById("torrentInput");
-    const output = document.getElementById("output");
-    const errorOutput = document.getElementById("errorOutput");
-    const githubBase = "https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:";
-
-    input.addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      output.textContent = "";
-      errorOutput.textContent = "";
-
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const data = bencode.decode(new Uint8Array(arrayBuffer));
-        const info = data["info"];
-        const encodedInfo = bencode.encode(info);
-
-        const hashBuffer = await crypto.subtle.digest("SHA-1", encodedInfo);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-        const name = typeof info["name"] === "string" 
-          ? info["name"]
-          : new TextDecoder().decode(info["name"]);
-
-        const magnetLink = `magnet:?xt=urn:btih:${hashHex}&dn=${encodeURIComponent(name)}`;
-        const githubLink = `${githubBase}${hashHex}&dn=${encodeURIComponent(name)}`;
-
-        output.innerHTML = `
-          <strong>HASH:</strong> <code>${hashHex}</code><br>
-          <strong>NAME:</strong> <code>${name}</code><br><br>
-          <strong>🔗 Magnet Link:</strong><br>
-          <a href="${magnetLink}" target="_blank">${magnetLink}</a><br><br>
-          <strong>🌐 GitHub Link:</strong><br>
-          <a href="${githubLink}" target="_blank">${githubLink}</a>
-        `;
-      } catch (err) {
-        console.error("Erro ao processar o arquivo .torrent:", err);
-        errorOutput.textContent = "❌ Erro ao processar o arquivo .torrent.";
+    // Versão compacta de bencode.js (adaptada para browser)
+    const bencode = (() => {
+      function decode(input) {
+        let pos = 0;
+        function nextChar() {
+          return String.fromCharCode(input[pos]);
+        }
+        function readLen() {
+          let len = '';
+          while (input[pos] !== 58) {
+            len += String.fromCharCode(input[pos]);
+            pos++;
+          }
+          pos++;
+          return parseInt(len);
+        }
+        function decodeItem() {
+          let char = String.fromCharCode(input[pos]);
+          if (char === 'i') {
+            pos++;
+            let num = '';
+            while (input[pos] !== 101) {
+              num += String.fromCharCode(input[pos]);
+              pos++;
+            }
+            pos++;
+            return parseInt(num, 10);
+          } else if (char === 'l') {
+            pos++;
+            const list = [];
+            while (String.fromCharCode(input[pos]) !== 'e') {
+              list.push(decodeItem());
+            }
+            pos++;
+            return list;
+          } else if (char === 'd') {
+            pos++;
+            const dict = {};
+            while (String.fromCharCode(input[pos]) !== 'e') {
+              const key = decodeItem();
+              const val = decodeItem();
+              dict[new TextDecoder().decode(key)] = val;
+            }
+            pos++;
+            return dict;
+          } else if (char >= '0' && char <= '9') {
+            const len = readLen();
+            const val = input.slice(pos, pos + len);
+            pos += len;
+            return val;
+          } else {
+            throw new Error(`Invalid token '${char}' at position ${pos}`);
+          }
+        }
+        return decodeItem();
       }
+
+      function encode(obj) {
+        function encodeItem(item) {
+          if (typeof item === 'number') {
+            return `i${item}e`;
+          } else if (Array.isArray(item)) {
+            return `l${item.map(encodeItem).join('')}e`;
+          } else if (item instanceof Uint8Array) {
+            return `${item.length}:${new TextDecoder().decode(item)}`;
+          } else if (typeof item === 'string') {
+            return `${item.length}:${item}`;
+          } else if (typeof item === 'object') {
+            return 'd' + Object.keys(item).sort().map(key => {
+              return encodeItem(key) + encodeItem(item[key]);
+            }).join('') + 'e';
+          } else {
+            throw new Error("Unsupported type for bencode");
+          }
+        }
+        return new TextEncoder().encode(encodeItem(obj));
+      }
+
+      return { decode, encode };
+    })();
+  </script>
+
+  <script>
+    const torrentInput = document.getElementById('torrentFile');
+    const output = document.getElementById('output');
+    const consoleLog = document.getElementById('consoleLog');
+
+    function log(msg) {
+      consoleLog.textContent += `\n> ${msg}`;
+    }
+
+    torrentInput.addEventListener('change', function () {
+      const file = this.files[0];
+      output.innerHTML = "";
+      consoleLog.textContent = "Console:";
+
+      if (!file) {
+        output.innerHTML = "❗ Nenhum arquivo selecionado.";
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = async function (e) {
+        try {
+          log("🔍 Lendo arquivo...");
+          const buffer = new Uint8Array(e.target.result);
+          log(`📦 Arquivo carregado: ${file.name} (${buffer.length} bytes)`);
+
+          const decoded = bencode.decode(buffer);
+          log("✅ Arquivo decodificado com sucesso.");
+
+          const info = decoded["info"];
+          const name = new TextDecoder().decode(info["name"]);
+          const encodedInfo = bencode.encode(info);
+          const hashBuffer = await crypto.subtle.digest("SHA-1", encodedInfo);
+          const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+          output.innerHTML = `
+            <h3>Resultado:</h3>
+            <p><strong>HASH:</strong> <code>${hashHex}</code></p>
+            <p><strong>NAME:</strong> <code>${name}</code></p>
+          `;
+          log("🎯 HASH e NAME extraídos com sucesso.");
+        } catch (err) {
+          console.error(err);
+          output.innerHTML = "❌ Erro ao processar o arquivo .torrent.";
+          log(`❌ Erro: ${err.message}`);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
     });
   </script>
 </body>
