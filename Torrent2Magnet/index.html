@@ -9,6 +9,51 @@
 	<link rel="shortcut icon" href="favicon.png" />
 	<link rel="stylesheet" href="style.css" />
 	<script src="src/t2m.loader.js"></script>
+	<style>
+		.footer-banner {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			background-color: #111;
+			color: #0f0;
+			font-family: monospace;
+			font-size: 14px;
+			padding: 10px;
+			text-align: center;
+			animation: scroll-left 20s linear infinite;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		@keyframes scroll-left {
+			0% { transform: translateX(100%); }
+			100% { transform: translateX(-100%); }
+		}
+		.footer-container {
+			position: relative;
+			width: 100%;
+			overflow: hidden;
+			height: 40px;
+			background-color: #111;
+			margin-top: 40px;
+		}
+		#result-container {
+			margin: 20px 0;
+			text-align: center;
+			font-family: monospace;
+		}
+		#result-container p {
+			margin: 10px;
+			color: lime;
+		}
+		.image-logo {
+			display: block;
+			margin: 40px auto;
+			max-width: 180px;
+			border-radius: 20px;
+			box-shadow: 0 0 10px lime;
+		}
+	</style>
 </head>
 <body>
 
@@ -42,102 +87,61 @@
 </div>
 
 <div class="main body">
-	<h1 id="converter"><span class="section_id" id="converter.exclusive"><span class="hardlink_text">Converter<a class="hardlink" href="#converter"></a></span><label class="converter_exclusive_mode script_enabled"><input type="checkbox" class="converter_exclusive_mode_check checkbox" /><span class="converter_exclusive_mode_text"></span></label></span></h1>
-	<p>
-		<div class="script_disabled script_visible">
-			Javascript is required to use the inline converter.
-		</div>
-		<div class="script_enabled">
-			<div class="converter">
-				<div class="converter_container">
-					<div class="converter_table">
-						<div class="converter_cell converter_cell_left">
-							<div class="converter_svg_container">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" class="converter_svg_graphic">
-									<polygon points="0.7,0 0.7,0.5 1,0.5 0.5,1 0,0.5 0.3,0.5 0.3,0" class="converter_svg_graphic_poly"></polygon>
-								</svg>
-							</div>
-						</div>
-						<div class="converter_cell converter_cell_right">
-							<div class="converter_info">
-								<div class="converter_info_line1">Drop <a class="link_external light_underline link_stop_propagation" href="https://en.wikipedia.org/wiki/Torrent_file" target="_blank"><span>.torrent</span></a> files here</div>
-								<div class="converter_info_line2">to convert them to <a class="link_external light_underline link_stop_propagation" href="https://en.wikipedia.org/wiki/Magnet_uri" target="_blank"><span>magnet URI</span></a>s</div>
-								<div class="converter_info_line3">Or click to open the file browser</div>
-								<input type="file" class="converter_files_input" multiple />
-							</div>
+
+	<!-- Imagem do projeto -->
+	<img src="regirako.png" alt="regirako logo" class="image-logo" />
+
+	<h1 id="converter">
+		<span class="section_id" id="converter.exclusive">
+			<span class="hardlink_text">Converter<a class="hardlink" href="#converter"></a></span>
+			<label class="converter_exclusive_mode script_enabled">
+				<input type="checkbox" class="converter_exclusive_mode_check checkbox" />
+				<span class="converter_exclusive_mode_text"></span>
+			</label>
+		</span>
+	</h1>
+
+	<div class="script_disabled script_visible">
+		Javascript is required to use the inline converter.
+	</div>
+
+	<div class="script_enabled">
+		<div class="converter">
+			<div class="converter_container">
+				<div class="converter_table">
+
+					<div class="converter_cell converter_cell_left">
+						<div class="converter_svg_container">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" class="converter_svg_graphic">
+								<polygon points="0.7,0 0.7,0.5 1,0.5 0.5,1 0,0.5 0.3,0.5 0.3,0" class="converter_svg_graphic_poly"></polygon>
+							</svg>
 						</div>
 					</div>
+
+					<div class="converter_cell converter_cell_right">
+						<div class="converter_info">
+							<div class="converter_info_line1">Drop <a class="link_external light_underline link_stop_propagation" href="https://en.wikipedia.org/wiki/Torrent_file" target="_blank"><span>.torrent</span></a> files here</div>
+							<div class="converter_info_line2">to convert them to <a class="link_external light_underline link_stop_propagation" href="https://en.wikipedia.org/wiki/Magnet_uri" target="_blank"><span>magnet URI</span></a>s</div>
+							<div class="converter_info_line3">Or click to open the file browser</div>
+							<input type="file" class="converter_files_input" multiple />
+						</div>
+					</div>
+
 				</div>
 			</div>
 		</div>
-	</p>
-
-	<div class="converted"></div>
-
-	<div class="non_exclusive">
-		<h1 id="libraries"><span class="hardlink_text">Libraries<a class="hardlink" href="#libraries"></a></span></h1>
-		<p>The following Javascript libraries are used on this page:</p>
-		<p>
-			<ul>
-				<li><a class="link_codebase light_underline" href="https://regirako.github.io/Magnet2URL/Torrent2Magnet/src/sha1.js" target="_blank"><span>sha1.js</span></a> - <a class="link_external light_underline" href="https://en.wikipedia.org/wiki/SHA-1" target="_blank"><span>SHA-1</span></a> hashing library</li>
-				<li><a class="link_codebase light_underline" href="https://regirako.github.io/Magnet2URL/Torrent2Magnet/bencode.js" target="_blank"><span>bencode.js</span></a> - <a class="link_external light_underline" href="https://en.wikipedia.org/wiki/Bencode" target="_blank"><span>Bencode</span></a> encoding/decoding library</li>
-				<li><a class="link_codebase light_underline" href="https://regirako.github.io/Magnet2URL/Torrent2Magnet/src/base32.js" target="_blank"><span>base32.js</span></a> - <a class="link_external light_underline" href="https://en.wikipedia.org/wiki/Base32" target="_blank"><span>Base32</span></a> encoding/decoding library</li>
-			</ul>
-		</p>
-		<p>
-			They are primarly designed for web usage, but they can be trivially modified to be used with something such as <a class="link_external light_underline" href="http://nodejs.org/" target="_blank"><span>node.js</span></a>.
-		</p>
-
-		<h4 id="sha1.js"><span class="hardlink_text">sha1.js<a class="hardlink" href="#sha1.js"></a></span></h4>
-		<p>
-			Computes the <a class="link_external light_underline" href="https://en.wikipedia.org/wiki/SHA-1" target="_blank"><span>SHA-1</span></a> hash of the specified data using the basic algorithm described in <a class="link_external light_underline" href="https://tools.ietf.org/html/rfc3174" target="_blank"><span>RFC 3174</span></a>, with a paradigm similar to <a class="link_external light_underline" href="https://docs.python.org/2/library/hashlib.html" target="_blank"><span>python's hashlib</span></a>. Data can be input in chunks, and the digest can be calculated at any point without modifying the internal state.
-		</p>
-
-		<h6 id="sha1.js.interface"><span class="hardlink_text">Public interface<a class="hardlink" href="#sha1.js.interface"></a></span></h6>
-		<p>
-			The following are public methods on the <code>SHA1</code> class:<br />
-			<ul>
-				<li><code><strong><em>constructor</em></strong>()</code><br />Creates a new <code>SHA1</code> hashing instance.</li>
-				<li><code><strong>reset</strong>()</code><br />Resets the internal state of the instance.</li>
-				<li><code><strong>update</strong>(value_array)</code><br />Update the internal state of the hashing object with the values contained in <code>value_array</code>.<br /> <code>value_array</code> can be a string, or a typed array.</li>
-				<li><code><strong>digest</strong>() <span class="light">: Uint8Array</span></code><br />Computes and returns the SHA1 digest. Return is a <code>Uint8Array</code> of length <code>20</code>.</li>
-			</ul>
-		</p>
-
-		<h4 id="bencode.js"><span class="hardlink_text">bencode.js<a class="hardlink" href="#bencode.js"></a></span></h4>
-		<p>
-			Encode/decode an object or string using the <a class="link_external light_underline" href="https://en.wikipedia.org/wiki/Bencode" target="_blank"><span>Bencode</span></a> format.
-		</p>
-
-		<h6 id="bencode.js.interface"><span class="hardlink_text">Public interface<a class="hardlink" href="#bencode.js.interface"></a></span></h6>
-		<p>
-			<ul>
-				<li><code><strong>encode</strong>(obj) <span class="light">: string</span></code><br />Encode <code>obj</code> into a Bencoded string.</li>
-				<li><code><strong>decode</strong>(str) <span class="light">: [object | array | string | number]</span></code><br /><em>throws <code>"Invalid format"</code></em><br />Decodes Bencoded <code>str</code> back to original type.</li>
-			</ul>
-		</p>
-
-		<h4 id="base32.js"><span class="hardlink_text">base32.js<a class="hardlink" href="#base32.js"></a></span></h4>
-		<p>Encode/decode a string using <a class="link_external light_underline" href="https://tools.ietf.org/html/rfc4648" target="_blank"><span>RFC 4648</span></a> Base32 format.</p>
-
-		<h6 id="base32.js.interface"><span class="hardlink_text">Public interface<a class="hardlink" href="#base32.js.interface"></a></span></h6>
-		<p>
-			<ul>
-				<li><code><strong>encode</strong>(str) <span class="light">: string</span></code><br />Encode <code>str</code> into Base32.</li>
-				<li><code><strong>decode</strong>(str) <span class="light">: string</span></code><br />Decode <code>str</code> from Base32 into original string.</li>
-			</ul>
-		</p>
-
-		<h1 id="javascript"><span class="hardlink_text">Other Javascript files<a class="hardlink" href="#javascript"></a></span></h1>
-		<p>These are the other Javascript files included in this repository:</p>
-		<p>
-			<ul>
-				<li><a class="link_codebase light_underline" href="https://regirako.github.io/Magnet2URL/Torrent2Magnet/src/sha1.test.js" target="_blank"><span>sha1.test.js</span></a></li>
-				<li><a class="link_codebase light_underline" href="https://regirako.github.io/Magnet2URL/Torrent2Magnet/src/t2m.loader.js" target="_blank"><span>t2m.loader.js</span></a></li>
-				<li><a class="link_codebase light_underline" href="https://regirako.github.io/Magnet2URL/Torrent2Magnet/src/t2m.js" target="_blank"><span>t2m.js</span></a></li>
-			</ul>
-		</p>
 	</div>
+
+	<!-- Aqui será inserido o resultado -->
+	<div id="result-container"></div>
+
+	<!-- Rodapé animado -->
+	<div class="footer-container">
+		<div class="footer-banner">
+			🚀 Feito com 💚 por regirako — Drop um .torrent e receba seu link magnet automaticamente! 🧲
+		</div>
+	</div>
+
 </div>
 
 </body>
