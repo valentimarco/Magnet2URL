@@ -71,13 +71,12 @@
     <span>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</span>
   </div>
 
-  <!-- Scripts -->
-  <script src="./src/bencode.js"></script>
-  <script src="./src/sha1.js"></script>
-  <script src="./src/t2m.js"></script>
+  <!-- Carregador de dependências -->
+  <script src="./src/t2m.loader.js"></script>
 
+  <!-- Script principal -->
   <script>
-    document.getElementById('torrentFile').addEventListener('change', function (event) {
+    document.getElementById('torrentFile').addEventListener('change', async function (event) {
       const output = document.getElementById('output');
       output.innerHTML = '⏳ Processando...';
 
@@ -90,16 +89,8 @@
       const reader = new FileReader();
       reader.onload = function (e) {
         try {
-          const arrayBuffer = e.target.result;
-          const bytes = new Uint8Array(arrayBuffer);
-          const data = bencode.decode(bytes);
-
-          if (!data.info) throw new Error("Dicionário 'info' não encontrado.");
-
-          const encodedInfo = bencode.encode(data.info);
-          const hashBuffer = sha1(encodedInfo);
-          const infoHash = Array.from(hashBuffer).map(b => b.toString(16).padStart(2, '0')).join('');
-          const name = data.info.name ? data.info.name.toString() : 'Nome não encontrado';
+          const buffer = new Uint8Array(e.target.result);
+          const { infoHash, name } = t2m(buffer);
 
           const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
           const githubLink = `https://regirako.github.io/Magnet2URL/?magnet=${encodeURIComponent(magnet)}`;
