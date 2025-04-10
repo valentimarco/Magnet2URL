@@ -64,56 +64,68 @@
 </head>
 <body>
   <h1>Torrent2Magnet</h1>
-  <input type="file" id="torrentFile" accept=".torrent" />
-  <div class="output" id="output"></div>
+  <input type="file" id="torrentFile" accept=".torrent" disabled />
+  <div class="output" id="output">⏳ Carregando dependências...</div>
 
   <div class="marquee">
     <span>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</span>
   </div>
 
-  <!-- Carregador de dependências -->
+  <!-- Loader que carrega t2m.js, bencode.js, sha1.js etc -->
   <script src="./src/t2m.loader.js"></script>
 
   <!-- Script principal -->
   <script>
-    document.getElementById('torrentFile').addEventListener('change', async function (event) {
-      const output = document.getElementById('output');
-      output.innerHTML = '⏳ Processando...';
+    window.addEventListener('load', () => {
+      // Aguarda até que a função t2m esteja disponível
+      const interval = setInterval(() => {
+        if (typeof t2m === 'function') {
+          clearInterval(interval);
+          document.getElementById('torrentFile').disabled = false;
+          document.getElementById('output').innerHTML = '✅ Pronto! Selecione um arquivo .torrent.';
 
-      const file = event.target.files[0];
-      if (!file) {
-        output.innerHTML = '❌ Nenhum arquivo selecionado.';
-        return;
-      }
+          document.getElementById('torrentFile').addEventListener('change', function (event) {
+            const output = document.getElementById('output');
+            const file = event.target.files[0];
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        try {
-          const buffer = new Uint8Array(e.target.result);
-          const { infoHash, name } = t2m(buffer);
+            if (!file) {
+              output.innerHTML = '❌ Nenhum arquivo selecionado.';
+              return;
+            }
 
-          const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
-          const githubLink = `https://regirako.github.io/Magnet2URL/?magnet=${encodeURIComponent(magnet)}`;
+            output.innerHTML = '⏳ Processando...';
 
-          output.innerHTML = `
-            ✅ <strong>Hash:</strong> ${infoHash}<br/>
-            📁 <strong>Nome:</strong> ${name}<br/>
-            🔗 <strong>Magnet Link:</strong><br/>
-            <a href="${magnet}" target="_blank">${magnet}</a><br/><br/>
-            🧩 <strong>Link GitHub Formatado:</strong><br/>
-            <a href="${githubLink}" target="_blank">${githubLink}</a>
-          `;
-        } catch (err) {
-          output.innerHTML = `❌ Erro ao processar o arquivo .torrent:<br>${err.message}`;
-          console.error(err);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              try {
+                const buffer = new Uint8Array(e.target.result);
+                const { infoHash, name } = t2m(buffer);
+
+                const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
+                const githubLink = `https://regirako.github.io/Magnet2URL/?magnet=${encodeURIComponent(magnet)}`;
+
+                output.innerHTML = `
+                  ✅ <strong>Hash:</strong> ${infoHash}<br/>
+                  📁 <strong>Nome:</strong> ${name}<br/>
+                  🔗 <strong>Magnet Link:</strong><br/>
+                  <a href="${magnet}" target="_blank">${magnet}</a><br/><br/>
+                  🧩 <strong>Link GitHub Formatado:</strong><br/>
+                  <a href="${githubLink}" target="_blank">${githubLink}</a>
+                `;
+              } catch (err) {
+                output.innerHTML = `❌ Erro ao processar o arquivo .torrent:<br>${err.message}`;
+                console.error(err);
+              }
+            };
+
+            reader.onerror = function () {
+              output.innerHTML = '❌ Erro ao ler o arquivo.';
+            };
+
+            reader.readAsArrayBuffer(file);
+          });
         }
-      };
-
-      reader.onerror = function () {
-        output.innerHTML = '❌ Erro ao ler o arquivo.';
-      };
-
-      reader.readAsArrayBuffer(file);
+      }, 100); // Verifica a cada 100ms
     });
   </script>
 </body>
