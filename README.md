@@ -29,14 +29,15 @@ Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirec
 
 3. **Lembre-se:** quanto mais informações seu Magnet Link tiver (**HASH + NAME + TRACKER**), mais fácil será de reconhecer ele no aplicativo de gerenciamente de torrent do seu PC-Desktop.
 
+4. **EXTRA:**
+Caso necessite transformar arquivos Torrents em Magnet Links válidos com facilidade, você pode utilizar esse projeto do usuário @nutbread (https://github.com/nutbread/t2m) como auxilio.
+- **Página para conversão:** https://nutbread.github.io/t2m/
+
 🔗 Ao clicar nesse link:
 - O navegador tenta abrir o link no seu cliente torrent
 - Se não for redirecionado automaticamente, uma mensagem explicativa com um tutorial aparecerá com a opção de tentar novamente
 - Você pode acionar a música enquanto lê o tutorial clicando em "Music ON/OFF"
  
-4. **EXTRA:**
-Caso necessite transformar arquivos Torrents em Magnet Links válidos com facilidade, você pode utilizar esse projeto do usuário @nutbread (https://github.com/nutbread/t2m) como auxilio.
-- **Página para conversão:** https://nutbread.github.io/t2m/
  ---
 
 ## 🧪 Exemplo de uso
