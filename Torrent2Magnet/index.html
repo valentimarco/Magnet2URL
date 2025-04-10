@@ -2,131 +2,117 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Torrent2Magnet</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background: url('../assets/regirako.png') no-repeat center center fixed;
-      background-size: cover;
-      font-family: Arial, sans-serif;
-      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
       text-align: center;
+      padding: 2em;
+      margin: 0;
     }
 
     h1 {
-      margin-top: 30px;
-      font-size: 2.5rem;
-      text-shadow: 2px 2px 4px #000;
+      color: #333;
+      font-size: 2rem;
     }
 
     input[type="file"] {
       margin: 20px 0;
-      padding: 10px;
-      font-size: 1rem;
     }
 
-    .output {
+    #output {
       margin-top: 20px;
-      font-size: 1.2rem;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.6);
-      border-radius: 10px;
+      word-wrap: break-word;
+      padding: 1em;
+      border-radius: 8px;
+      background-color: #e0e0e0;
       display: inline-block;
       max-width: 90%;
-      word-wrap: break-word;
+      color: #222;
     }
 
-    .marquee {
+    .footer-banner {
       position: fixed;
       bottom: 0;
+      left: 0;
       width: 100%;
-      background: #000;
-      color: #fff;
-      padding: 10px 0;
-      font-size: 1rem;
-      white-space: nowrap;
+      height: 40px;
+      background: rgba(51, 51, 51, 0.2);
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      z-index: 10;
     }
 
-    .marquee span {
+    .footer-banner span {
+      white-space: nowrap;
       display: inline-block;
       padding-left: 100%;
-      animation: scroll-left 15s linear infinite;
+      animation: slide-left 50s linear infinite;
+      color: #333;
+      font-size: 14px;
+      font-weight: bold;
     }
 
-    @keyframes scroll-left {
-      0% { transform: translateX(0%); }
+    @keyframes slide-left {
+      0% { transform: translateX(0); }
       100% { transform: translateX(-100%); }
     }
+
+    .regirako {
+      position: fixed;
+      bottom: 60px;
+      right: 20px;
+      height: 600px;
+      opacity: 0.5;
+      z-index: 5;
+      transform-origin: center center;
+      pointer-events: none;
+    }
   </style>
+  <script type="module">
+    import { t2m } from './src/t2m.js';
+    import { parse } from './src/t2m.loader.js';
+
+    window.onload = () => {
+      const fileInput = document.getElementById('torrent');
+      const output = document.getElementById('output');
+      const githubOutput = document.getElementById('github-output');
+      const errorOutput = document.getElementById('error');
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = t2m(new Uint8Array(arrayBuffer));
+
+          output.innerHTML = `✔️ Magnet Link:<br><code>${result.magnet}</code>`;
+          githubOutput.innerHTML = `<br>🔗 Link com base no GitHub:<br><code>https://regirako.github.io/Magnet2URL/#${encodeURIComponent(result.magnet)}</code>`;
+          errorOutput.innerText = '';
+        } catch (err) {
+          errorOutput.innerText = `❌ Erro ao processar o arquivo .torrent: ${err.message}`;
+          output.innerHTML = '';
+          githubOutput.innerHTML = '';
+        }
+      });
+    };
+  </script>
 </head>
 <body>
   <h1>Torrent2Magnet</h1>
-  <input type="file" id="torrentFile" accept=".torrent" disabled />
-  <div class="output" id="output">⏳ Carregando dependências...</div>
+  <input type="file" id="torrent" accept=".torrent" />
+  <div id="output"></div>
+  <div id="github-output"></div>
+  <p id="error" style="color: red; font-weight: bold;"></p>
 
-  <div class="marquee">
-    <span>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</span>
+  <div class="footer-banner">
+    <span><strong>Esta página converte arquivos .torrent locais para Magnet Links baseados em hash.</strong></span>
   </div>
 
-  <!-- Loader que carrega t2m.js, bencode.js, sha1.js etc -->
-  <script src="./src/t2m.loader.js"></script>
-
-  <!-- Script principal -->
-  <script>
-    window.addEventListener('load', () => {
-      // Aguarda até que a função t2m esteja disponível
-      const interval = setInterval(() => {
-        if (typeof t2m === 'function') {
-          clearInterval(interval);
-          document.getElementById('torrentFile').disabled = false;
-          document.getElementById('output').innerHTML = '✅ Pronto! Selecione um arquivo .torrent.';
-
-          document.getElementById('torrentFile').addEventListener('change', function (event) {
-            const output = document.getElementById('output');
-            const file = event.target.files[0];
-
-            if (!file) {
-              output.innerHTML = '❌ Nenhum arquivo selecionado.';
-              return;
-            }
-
-            output.innerHTML = '⏳ Processando...';
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-              try {
-                const buffer = new Uint8Array(e.target.result);
-                const { infoHash, name } = t2m(buffer);
-
-                const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(name)}`;
-                const githubLink = `https://regirako.github.io/Magnet2URL/?magnet=${encodeURIComponent(magnet)}`;
-
-                output.innerHTML = `
-                  ✅ <strong>Hash:</strong> ${infoHash}<br/>
-                  📁 <strong>Nome:</strong> ${name}<br/>
-                  🔗 <strong>Magnet Link:</strong><br/>
-                  <a href="${magnet}" target="_blank">${magnet}</a><br/><br/>
-                  🧩 <strong>Link GitHub Formatado:</strong><br/>
-                  <a href="${githubLink}" target="_blank">${githubLink}</a>
-                `;
-              } catch (err) {
-                output.innerHTML = `❌ Erro ao processar o arquivo .torrent:<br>${err.message}`;
-                console.error(err);
-              }
-            };
-
-            reader.onerror = function () {
-              output.innerHTML = '❌ Erro ao ler o arquivo.';
-            };
-
-            reader.readAsArrayBuffer(file);
-          });
-        }
-      }, 100); // Verifica a cada 100ms
-    });
-  </script>
+  <img class="regirako" src="../assets/regirako.png" alt="Regirako">
 </body>
 </html>
