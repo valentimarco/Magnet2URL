@@ -40,6 +40,8 @@ Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirec
 Caso necessite transformar arquivos Torrents em Magnet Links válidos com facilidade, você pode utilizar esse projeto do usuário @nutbread (https://github.com/nutbread/t2m) como auxilio.
 - **Página para conversão:** https://nutbread.github.io/t2m/
 
+ ---
+ 
 ## 🧪 Exemplo de uso
 
 🔸 **Link formatado para Notion/Discord**:
