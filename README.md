@@ -71,10 +71,13 @@ Caso necessite transformar arquivos Torrents em Magnet Links válidos com facili
 
  ---
  
-## 📄 Licença
+## 🧊 Licença
 
-Este projeto está sob a licença [MIT](LICENSE).  
-Sinta-se à vontade para usar, melhorar e compartilhar. 🚀
+Este projeto é apenas para uso pessoal e não possui licença comercial.
+
+---
+
+Criado com 🧡 por [@regirako](https://github.com/regirako)
 
 ---
 
