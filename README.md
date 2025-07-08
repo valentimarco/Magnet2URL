@@ -78,7 +78,3 @@ Este projeto é apenas para uso pessoal e não possui licença comercial.
 ---
 
 Criado com 🧡 por [@regirako](https://github.com/regirako)
-
----
-
-Feito com 🧡 por [@regirako](https://github.com/regirako)
