@@ -4,77 +4,60 @@
 
 # 🎯 Magnet2URL
 
-Transforme **magnet links** em **URLs clicáveis via HTTPS** para usar com segurança e praticidade no **Notion**, **Discord**, **Telegram** ou qualquer outro lugar onde magnet links normais não são reconhecidos!
+Transform **magnet links** into **clickable HTTPS URLs** to use safely and conveniently in **Notion**, **Discord**, **Telegram**, or anywhere else where normal magnet links aren't recognized!
 
----
 
-## 🚀 Funcionalidade
+## 🚀 Functionality
 
-Este projeto converte magnet links em URLs HTTPS que, ao serem clicadas, redirecionam para o cliente .torrent instalado (como **qBittorrent**, **Deluge**, entre outros).
+This project converts magnet links into HTTPS URLs that, when clicked, redirect to your installed torrent client (like **qBittorrent**, **Deluge**, and others).
 
-➡️ Ideal para:
-- 🗂️ Compartilhar conteúdo via Magnet de forma amigável
-- 🧠 Colar em notas no Notion
-- 💬 Enviar em grupos no Discord e outras redes
+➡️ Ideal for:
+- 🗂️ Sharing Magnet content in a user-friendly way
+- 🧠 Pasting in Notion notes
+- 💬 Sending in Discord groups and other networks
 
----
 
-## ⚙️ Como usar
 
-1. Copie o link da página publicada no GitHub Pages:
-> https://regirako.github.io/Magnet2URL/#
+## ⚙️ How to use
 
-2. Adicione o magnet link após o caractere `#`. Exemplo:
-> https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:b0aaad320310d1d1205d509b6589352da6bf0b16&dn=linuxmint-21.1-xfce-64bit.iso&tr=udp://tracker.openbittorrent.com:6969&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://exodus.desync.com:6969
+1. Copy the published GitHub Pages link:
+> 
 
-3. **Lembre-se:** quanto mais informações seu Magnet Link tiver (**HASH + NAME + TRACKER**), mais fácil será de reconhecer ele no aplicativo de gerenciamente de torrent do seu PC-Desktop.
+2. Add the magnet link after the `#` character. Example:
+> 
 
-🔗 Ao clicar nesse link:
-- O navegador tenta abrir o link no seu cliente torrent
-- Se não for redirecionado automaticamente, uma mensagem explicativa com um tutorial aparecerá com a opção de tentar novamente
-- Você pode acionar a música enquanto lê o tutorial clicando em "Music ON/OFF"
+3. Open the link
+
+🔗 When clicking this link:
+- The browser attempts to open the link in your torrent client
+- If not automatically redirected, an explanatory message with a tutorial will appear with the option to try again
  
- ---
 
-## 🧪 Exemplo de uso
 
-🔸 **Link formatado para Notion/Discord**:
-> [Baixar Linux Mint 💻](https://regirako.github.io/Magnet2URL/#magnet:?xt=urn:btih:b0aaad320310d1d1205d509b6589352da6bf0b16&dn=linuxmint-21.1-xfce-64bit.iso&tr=udp://tracker.openbittorrent.com:6969&tr=udp://tracker.opentrackr.org:1337/announce&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://exodus.desync.com:6969)
+## 📦 Compatibility
 
-🔸 O que o link faz:
-- Abre o navegador
-- Redireciona para o seu cliente de torrent com o arquivo magnet
-
----
-
-## 📦 Compatibilidade
-
-✅ Testado com:
+✅ Tested with:
 - qBittorrent  
 - Deluge  
 - Transmission  
 - WebTorrent  
-- Navegadores Chrome, Firefox e Edge
+- Chrome, Firefox, and Edge browsers
 
----
 
-## 🛠️ Tecnologias utilizadas
 
-- HTML + JavaScript (puro)
-- GitHub Pages (deploy gratuito)
+## 📙 Additional Tool (Torrent to Magnet)
+If you need to easily transform Torrent files into valid Magnet Links, you can use this project by user @nutbread (https://github.com/nutbread/t2m) as an aid.
+- **Conversion page:** https://nutbread.github.io/t2m/
 
----
 
-## 📙 Ferramenta Adicional (Torrent to Magnet)
-Caso necessite transformar arquivos Torrents em Magnet Links válidos com facilidade, você pode utilizar esse projeto do usuário @nutbread (https://github.com/nutbread/t2m) como auxilio.
-- **Página para conversão:** https://nutbread.github.io/t2m/
-
- ---
  
-## 🧊 Licença
+## 🧊 License
 
-Este projeto é apenas para uso pessoal e não possui licença comercial.
+This project is for personal use only and has no commercial license.
 
----
+## 👥 Contributors
 
-Criado com 🧡 por [@regirako](https://github.com/regirako)
+  ### Original Creator
+    Created with 🧡 by @regirako
+  ### Fork Maintainer
+    English translation and improvements by @valentimarco
