@@ -50,11 +50,6 @@ If you need to easily transform Torrent files into valid Magnet Links, you can u
 - **Conversion page:** https://nutbread.github.io/t2m/
 
 
- 
-## 🧊 License
-
-This project is for personal use only and has no commercial license.
-
 ## 👥 Contributors
 
   ### Original Creator
