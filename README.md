@@ -21,10 +21,10 @@ This project converts magnet links into HTTPS URLs that, when clicked, redirect 
 ## ⚙️ How to use
 
 1. Copy the published GitHub Pages link:
-> 
+> https://valentimarco.github.io/Magnet2URL
 
 2. Add the magnet link after the `#` character. Example:
-> 
+> https://valentimarco.github.io/Magnet2URL#<PutMagnetURLHere>
 
 3. Open the link
 
